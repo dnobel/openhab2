@@ -9,7 +9,7 @@
 				class="dimmer-widget">
 				<md-switch ng-if="!isReadOnly(item)" ng-model="item.state" ng-change="setOn(item.state)"
 					ng-true-value="'ON'" ng-false-value="'OFF'"></md-switch>
-				<h1 ng-if="isReadOnly(item)">{{item.state === 'ON' : 'ON' : 'OFF'}}</h1>
+				<h1 ng-if="isReadOnly(item)">{{item.state === 'ON' ? 'ON' : 'OFF'}}</h1>
 			</div>
 		</div>
 	</div>

@@ -34,7 +34,7 @@ angular.module('SmartHomeManagerApp.controllers', []).controller('BodyController
 	}
     $rootScope.$on('$routeChangeStart', function(){
     	$scope.subtitles = [];
-    	$scope.headerText = undefined;
+    	$scope.headerText = null;
     });
     $scope.generateUUID = function() {
 	    var d = new Date().getTime();
@@ -107,7 +107,7 @@ angular.module('SmartHomeManagerApp.controllers', []).controller('BodyController
         return $('select#' + property + ' option:selected').val();
     }
 }).controller('NavController', function($scope, $location) {
-    $scope.opened = undefined;
+    $scope.opened = null;
     $scope.open = function(viewLocation) {
     	$scope.opened = viewLocation;
     }
@@ -122,7 +122,7 @@ angular.module('SmartHomeManagerApp.controllers', []).controller('BodyController
     $scope.$on('$routeChangeSuccess', function() {
         $('body').removeClass('sml-open');
         $('.mask').remove();
-        $scope.opened = undefined;
+        $scope.opened = null;
     });
 }).controller('SelectGroupsDialogController', function($scope, $mdDialog, groupNames, homeGroupRepository) {
 	$scope.homeGroups = [];

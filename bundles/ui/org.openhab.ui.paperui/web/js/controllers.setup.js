@@ -111,7 +111,7 @@ angular.module('SmartHomeManagerApp.controllers.setup',
 	$scope.setSubtitle(['Manual Setup']);
 	$scope.setHeaderText('Choose a thing, which should be aded manually to your Smart Home.')
 	
-	$scope.currentBindingId = undefined;
+	$scope.currentBindingId = null;
 	$scope.setCurrentBindingId = function(bindingId) {
 		$scope.currentBindingId = bindingId;
 	};
@@ -134,12 +134,12 @@ angular.module('SmartHomeManagerApp.controllers.setup',
 	    return uuid;
 	};
 	
-	$scope.thingType = undefined;
+	$scope.thingType = null;
 	$scope.thing = {
-		UID: undefined,
+		UID: null,
 		configuration : {},
 		item: {
-			label: undefined,
+			label: null,
 			groupNames: []
 		}
 	}
