@@ -165,21 +165,25 @@ UpnpIOParticipant, DiscoveryListener {
 
 	@Override
 	public void thingDiscovered(DiscoveryService source, DiscoveryResult result) {
-		if (getThing().getConfiguration().get(UDN)
-				.equals(result.getProperties().get(UDN))) {
-			logger.debug("Discovered UDN '{}' for thing '{}'", result
-					.getProperties().get(UDN), getThing().getUID());
-			getThing().setStatus(ThingStatus.ONLINE);
-			onSubscription();
-			onUpdate();
+		if(result.getThingUID().equals(this.getThing().getUID())) {
+			if (getThing().getConfiguration().get(UDN)
+					.equals(result.getProperties().get(UDN))) {
+				logger.debug("Discovered UDN '{}' for thing '{}'", result
+						.getProperties().get(UDN), getThing().getUID());
+				getThing().setStatus(ThingStatus.ONLINE);
+				onSubscription();
+				onUpdate();
+			}
 		}
 	}
 
 	@Override
 	public void thingRemoved(DiscoveryService source, ThingUID thingUID) {
-		logger.debug("Setting status for thing '{}' to OFFLINE", getThing()
-				.getUID());
-		getThing().setStatus(ThingStatus.OFFLINE);
+		if(thingUID.equals(this.getThing().getUID())) {
+			logger.debug("Setting status for thing '{}' to OFFLINE", getThing()
+					.getUID());
+			getThing().setStatus(ThingStatus.OFFLINE);
+		}
 	}
 
 	@Override
@@ -233,6 +237,12 @@ UpnpIOParticipant, DiscoveryListener {
 		case PLAYLIST:
 			playPlayList(command);
 			break;
+		case PLAYQUEUE:
+			playQueue(command);
+			break;		
+		case PLAYTRACK:
+			playTrack(command);
+			break;	
 		case PLAYURI:
 			playURI(command);
 			break;
@@ -456,7 +466,7 @@ UpnpIOParticipant, DiscoveryListener {
 			break;
 		}
 		case "CurrentURI": {
-			updateCurrentURIFormatted();
+			updateCurrentURIFormatted(value);
 			break;
 		}
 		}
@@ -596,7 +606,14 @@ UpnpIOParticipant, DiscoveryListener {
 
 	protected void updateTrackMetaData() {
 
+		String coordinator = getCoordinator();
+		ZonePlayerHandler coordinatorHandler = getHandlerByName(coordinator);
 		SonosMetaData currentTrack = getTrackMetadata();
+
+		if (coordinatorHandler != null && coordinatorHandler != this) {
+			coordinatorHandler.updateMediaInfo();
+			currentTrack = coordinatorHandler.getTrackMetadata();
+		} 
 
 		if (currentTrack != null) {
 
@@ -623,28 +640,27 @@ UpnpIOParticipant, DiscoveryListener {
 			this.onValueReceived("CurrentAlbum", (album != null) ? album : "",
 					"AVTransport");
 
-			if(currentTrack.getTitle().contains("x-sonosapi-stream")) {
-				updateMediaInfo();
-			}
+			updateMediaInfo();
+
 		}
 
 	}
 
-	protected void updateCurrentURIFormatted() {
+	protected void updateCurrentURIFormatted(String URI) {
 
-		String currentURI = null;
+		String currentURI = URI;
 		SonosMetaData currentTrack = null;
 		String coordinator = getCoordinator();
 		ZonePlayerHandler coordinatorHandler = getHandlerByName(coordinator);
 
 		if (coordinatorHandler != null && coordinatorHandler != this) {
-			if(getCurrentURI().contains("x-rincon")) {
+			if(currentURI.contains("x-rincon-stream")) {
 				coordinatorHandler.updateMediaInfo();
 			}
 			currentURI = coordinatorHandler.getCurrentURI();
 			currentTrack = coordinatorHandler.getTrackMetadata();
 		} else {
-			currentURI = getCurrentURI();
+			//			currentURI = getCurrentURI();
 			currentTrack = getTrackMetadata();
 		}
 
@@ -654,7 +670,6 @@ UpnpIOParticipant, DiscoveryListener {
 			boolean needsUpdating = false;
 
 			if (opmlPartnerID != null && currentURI.contains("x-sonosapi-stream")) {
-
 				String stationID = StringUtils.substringBetween(currentURI,
 						":s", "?sid");
 				String previousStationID = stateMap.get("StationID");
@@ -706,9 +721,18 @@ UpnpIOParticipant, DiscoveryListener {
 						}
 					}
 				}
-			} else {
+			} 
 
-				if (currentTrack != null && !currentTrack.getTitle().contains("x-sonosapi-stream")) {
+			if(currentURI.contains("x-rincon-stream")) {
+				if(currentTrack != null) {
+					resultString = stateMap.get("CurrentTitle");
+					needsUpdating = true;
+				}
+			}
+
+
+			if (!currentURI.contains("x-rincon-mp3") && !currentURI.contains("x-rincon-stream") && !currentURI.contains("x-sonosapi")) {
+				if(currentTrack != null) {
 					if (currentTrack.getAlbumArtist().equals("")) {
 						resultString = currentTrack.getCreator() + " - "
 								+ currentTrack.getAlbum() + " - "
@@ -722,6 +746,7 @@ UpnpIOParticipant, DiscoveryListener {
 					needsUpdating = true;
 				}
 			}
+
 
 			if(needsUpdating) {
 				this.onValueReceived("CurrentURIFormatted", (resultString != null) ? resultString : "",
@@ -1190,6 +1215,10 @@ UpnpIOParticipant, DiscoveryListener {
 		seek("TRACK_NR", Long.toString(tracknr));
 	}
 
+	public void setPositionTrack(String tracknr) {
+		seek("TRACK_NR", tracknr);		
+	}
+
 	protected void seek(String unit, String target) {
 		if (unit != null && target != null) {
 
@@ -1624,6 +1653,19 @@ UpnpIOParticipant, DiscoveryListener {
 
 	}
 
+	public void playQueue(Command command) {
+		ZonePlayerHandler coordinator = getHandlerByName(getCoordinator());
+
+		// set the current playlist to our new queue
+		coordinator.setCurrentURI("x-rincon-queue:" + getUDN() + "#0", "");
+
+		// take the system off mute
+		coordinator.setMute(OnOffType.OFF);
+
+		// start jammin'
+		coordinator.play();
+	}
+
 	public void setLed(Command command) {
 		if (command != null) {
 			if (command instanceof OnOffType
@@ -1708,6 +1750,25 @@ UpnpIOParticipant, DiscoveryListener {
 
 	}
 
+	public void playTrack(Command command) {
+
+		if(command != null && command instanceof DecimalType) {
+			ZonePlayerHandler coordinator = getHandlerByName(getCoordinator());
+
+			String trackNumber = command.toString();
+
+			// seek the track - warning, we do not check if the tracknumber falls in the boundary of the queue
+			setPositionTrack(trackNumber);
+
+			// take the system off mute
+			coordinator.setMute(OnOffType.OFF);
+
+			// start jammin'
+			coordinator.play();
+		}
+
+	}
+
 	public void playPlayList(Command command) {
 		List<SonosEntry> playlists = getPlayLists();
 		SonosEntry theEntry = null;
@@ -1776,8 +1837,14 @@ UpnpIOParticipant, DiscoveryListener {
 	}
 
 	public String getCurrentURIFormatted() {
-		updateCurrentURIFormatted();
+		updateCurrentURIFormatted(getCurrentURI());
 		return stateMap.get("CurrentURIFormatted");
 	}
+
+    @Override
+    public void onStatusChanged(boolean status) {
+        // TODO Auto-generated method stub
+        
+    }
 
 }
