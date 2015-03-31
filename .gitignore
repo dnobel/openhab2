@@ -7,6 +7,8 @@ bundles/io/org.openhab.io.multimedia.tts.marytts/lib/
 .metadata/
 */plugin.xml_gen
 
+# Runtime generated files
+distribution/openhabhome/userdata/logs
 distribution/openhabhome/logs/*.log
 distribution/openhabhome/*.zip
 distribution/openhabhome/etc/rrd4j/*.rrd
@@ -17,7 +19,4 @@ distribution/openhabhome/userdata/logs/openhab.log
 distribution/openhabhome/userdata/mapdb/storage.mapdb
 distribution/openhabhome/userdata/mapdb/storage.mapdb.p
 distribution/openhabhome/userdata/mapdb/storage.mapdb.t
-bundles/ui/org.openhab.ui.paperui/web/bower_components
-*.iml
-.idea
-distribution/openhabhome/userdata/logs
+
