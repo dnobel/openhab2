@@ -349,8 +349,14 @@ md-input-container.md-default-theme:not(.md-input-invalid).md-input-focused labe
 }
 
 p.hint {
-	margin-top: -20px;
 	color: #777;
+	-webkit-flex: 1;
+    -ms-flex: 1;
+    flex: 1;
+    -webkit-order: 3;
+    -ms-flex-order: 3;
+  	order: 3;
+  	margin-top: 5px;
 }
 
 .form-group label {

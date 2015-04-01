@@ -25,10 +25,11 @@
 			<div class="parameter col-sm-6 col-xs-12">
 				<md-input-container> <label>{{parameter.label}}</label>
 				<input ng-model="thing.configuration[parameter.name]"
-					ng-required="parameter.required"> </md-input-container>
+					ng-required="parameter.required">
 				<p class="hint">
 					<small>{{parameter.description}}</small>
 				</p>
+				</md-input-container>
 			</div>
 			<div ng-if="$odd" class="clearfix"></div>
 		</div>

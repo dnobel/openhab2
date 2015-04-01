@@ -22,11 +22,11 @@ angular.module('SmartHomeManagerApp', [
 	when('/setup/wizard/thing-types/:bindingId', {templateUrl: 'partials/setup.html', controller: 'SetupWizardController', title: 'Setup Wizard'}).
 	when('/setup/wizard/add/:thingTypeUID', {templateUrl: 'partials/setup.html', controller: 'SetupWizardController', title: 'Setup Wizard'}).
 	when('/configuration', {redirectTo: '/configuration/bindings'}).
-	when('/configuration/bindings', {templateUrl: 'partials/configuration.html', controller: 'BindingController', title: 'Configuration'}).
-	when('/configuration/groups', {templateUrl: 'partials/configuration.html', controller: 'GroupController', title: 'Configuration'}).
-	when('/configuration/things', {templateUrl: 'partials/configuration.html', controller: 'ThingController', title: 'Configuration'}).
-	when('/configuration/things/view/:thingUID', {templateUrl: 'partials/configuration.html', controller: 'ViewThingController', title: 'Configuration'}).
-	when('/configuration/things/edit/:thingUID', {templateUrl: 'partials/configuration.html', controller: 'EditThingController', title: 'Configuration'}).
+	when('/configuration/bindings', {templateUrl: 'partials/configuration.html', controller: 'ConfigurationPageController', title: 'Configuration'}).
+	when('/configuration/groups', {templateUrl: 'partials/configuration.html', controller: 'ConfigurationPageController', title: 'Configuration'}).
+	when('/configuration/things', {templateUrl: 'partials/configuration.html', controller: 'ConfigurationPageController', title: 'Configuration'}).
+	when('/configuration/things/view/:thingUID', {templateUrl: 'partials/configuration.html', controller: 'ConfigurationPageController', title: 'Configuration'}).
+	when('/configuration/things/edit/:thingUID', {templateUrl: 'partials/configuration.html', controller: 'ConfigurationPageController', title: 'Configuration'}).
 	when('/preferences', {templateUrl: 'partials/preferences.html', controller: 'PreferencesPageController', title: 'Preferences'}).
 	otherwise({redirectTo: '/control'});
 }]).directive('editableitemstate', function(){

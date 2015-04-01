@@ -217,13 +217,12 @@ angular.module('SmartHomeManagerApp.controllers.control', []).controller('Contro
         }
     }
 	$scope.pending = false;
-	$scope.brightnessValue = null;
 	$scope.setBrightness = function(brightness) {
-	    $scope.brightnessValue = brightness === 0 ? '0' : brightness;
         // send updates every 300 ms only
         if(!$scope.pending) {
             $timeout(function() {
-                $scope.sendCommand($scope.brightnessValue);
+        	    var command = $scope.item.state === 0 ? '0' : $scope.item.state;
+                $scope.sendCommand(command);
                 $scope.pending = false;
             }, 300);
             $scope.pending = true;
@@ -266,16 +265,10 @@ angular.module('SmartHomeManagerApp.controllers.control', []).controller('Contro
 		 $scope.sendCommand(on);
         
         if(on === 'ON' && $scope.brightness === 0) {
-        	// set state to ON
-        	var stateObject = getStateAsObject($scope.item.state);
-        	stateObject.b = 100;
-        	$scope.item.state = toState(stateObject);
+        	$scope.brightness = 100;
         }
         if(on === 'OFF' && $scope.brightness > 0) {
-        	// set state to OFF
-        	var stateObject = getStateAsObject($scope.item.state);
-        	stateObject.b = 0;
-        	$scope.item.state = toState(stateObject);
+        	$scope.brightness = 0;
         }
     }
     
@@ -285,13 +278,18 @@ angular.module('SmartHomeManagerApp.controllers.control', []).controller('Contro
     	 // send updates every 300 ms only
         if(!$scope.pending) {
         	$timeout(function() {
-	        	var brightnessValue = brightness === 0 ? '0' : brightness;
+	        	var brightnessValue = $scope.brightness === 0 ? '0' : $scope.brightness;
 		        
 	        	 $scope.sendCommand(brightnessValue);
 		        
 		        var stateObject = getStateAsObject($scope.item.state);
 		    	stateObject.b = brightnessValue;
-		    	$scope.item.state = toState(stateObject);
+		    	if($scope.on === 'ON' && $scope.brightness === 0) {
+		    		$scope.on = 'OFF';
+		        }
+		        if($scope.on === 'OFF' && $scope.brightness > 0) {
+		        	$scope.on = 'ON';
+		        }
 	        	$scope.pending = false;
 	        }, 300);
 	        $scope.pending = true;
@@ -302,22 +300,26 @@ angular.module('SmartHomeManagerApp.controllers.control', []).controller('Contro
     	 // send updates every 300 ms only
         if(!$scope.pending) {
             $timeout(function() {
-            	var hueValue = hue === 0 ? '0' : hue;
+            	var hueValue = $scope.hue === 0 ? '0' : $scope.hue;
             	
             	var stateObject = getStateAsObject($scope.item.state);
             	stateObject.h = hueValue;
-            	//TODO: uncomment after DEO
-            	// if(!stateObject.s) {
-                	stateObject.s = 100;
-                //}
-                // if light is OFF, change it to ON
-                if(!stateObject.b) {
-                	stateObject.b = 100;
-                }
-                
-                $scope.item.state = toState(stateObject);
+            	
+            	if (!stateObject.b) {
+					stateObject.b = 100;
+				}
+            	if (!stateObject.s) {
+					stateObject.s = 100;
+				}
+
+		        if($scope.on === 'OFF') {
+		        	$scope.on = 'ON';
+		        	$scope.brightness = 100;
+		        }
+		        
+                var itemState = toState(stateObject);
                  
-                $scope.sendCommand($scope.item.state);
+                $scope.sendCommand(itemState);
    
             	$scope.pending = false;
             }, 300);
@@ -326,10 +328,9 @@ angular.module('SmartHomeManagerApp.controllers.control', []).controller('Contro
         
     }
 
-    $scope.getHexColor = function() {
-    	var stateObject = getStateAsObject($scope.item.state);
+    $scope.getHexColor = function(hue) {
         var hsv = tinycolor({
-            h : stateObject.h,
+            h : hue,
             s : 1,
             v : 1
         }).toHsv();
@@ -344,15 +345,17 @@ angular.module('SmartHomeManagerApp.controllers.control', []).controller('Contro
         $scope.hue = hue ? hue : 0;
         $scope.brightness = brightness ? brightness : 0;
         $scope.on = $scope.brightness > 0 ? 'ON' : 'OFF';
-        
-        var hexColor = $scope.getHexColor();
-        $($element).find('.hue .md-thumb').css('background-color', hexColor);
 	}
     
     setStates();
      
     $scope.$watch('item.state', function() {
     	setStates(); 
+	});
+    
+    $scope.$watch('hue', function() {
+        var hexColor = $scope.getHexColor($scope.hue);
+        $($element).find('.hue .md-thumb').css('background-color', hexColor);
 	});
     
     var hexColor =  $scope.getHexColor();

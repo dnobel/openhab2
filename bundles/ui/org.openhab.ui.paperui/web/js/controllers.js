@@ -1,13 +1,5 @@
 angular.module('SmartHomeManagerApp.controllers', []).controller('BodyController', function($rootScope, $scope, eventService, 
         toastService, discoveryResultRepository, thingTypeRepository, bindingRepository) {
-	$scope.getSchemeClass = function() {
-        var theme = localStorage.getItem('theme');
-        if (theme) {
-            return 'theme-' + theme;
-        } else {
-            return 'theme-openhab';
-        }
-    }
 	$scope.scrollTop = 0;
 	$(window).scroll(function() {
 		$scope.$apply(function (scope) {
@@ -16,9 +8,6 @@ angular.module('SmartHomeManagerApp.controllers', []).controller('BodyController
 	});
 	$scope.isBigTitle = function() {
 		return $scope.scrollTop < 80 && !$rootScope.simpleHeader;
-    }
-    $scope.isEshTheme = function() {
-        return $scope.getSchemeClass() === 'theme-white';
     }
     $scope.setTitle = function(title) {
     	$rootScope.title = title;
@@ -115,7 +104,7 @@ angular.module('SmartHomeManagerApp.controllers', []).controller('BodyController
     discoveryResultRepository.getAll();
     thingTypeRepository.getAll();
     bindingRepository.getAll();
-}).controller('PreferencesPageController', function($scope) {
+}).controller('PreferencesPageController', function($scope, toastService) {
 	$scope.setHeaderText('Edit user preferences.');
 	
 	var localStorage = window.localStorage;
@@ -123,12 +112,10 @@ angular.module('SmartHomeManagerApp.controllers', []).controller('BodyController
     var theme = localStorage.getItem('theme');
 
     $scope.language = language ? language : 'english';
-    $scope.theme = theme ? theme : 'openhab';
 
-    $scope.save = function(language, theme) {
-        localStorage.setItem('language', language);
-        localStorage.setItem('theme', theme);
-        $scope.showSuccessToast('Preferences saved successfully. Please reload the page.');
+    $scope.save = function() {
+        localStorage.setItem('language', $scope.language);
+        toastService.showSuccessToast('Preferences saved successfully. Please reload the page.');
     }
 
     $scope.getSelected = function(property) {

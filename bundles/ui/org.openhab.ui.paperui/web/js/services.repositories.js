@@ -107,15 +107,18 @@ angular.module('SmartHomeManagerApp.services.repositories', []).factory('binding
 	eventService.onEvent('smarthome/inbox/added/*', function(topic, discoveryResult) {
 		dataCache.add(discoveryResult);
 	});
+	eventService.onEvent('smarthome/inbox/removed/*', function(topic, discoveryResult) {
+		dataCache.remove(discoveryResult);
+	});
 	return dataCache;
 }).factory('thingRepository', 
 		function($q, $rootScope, thingSetupService) {
-	var dataCache = new DataCache($q, $rootScope, thingSetupService, 'things', true)
+	var dataCache = new DataCache($q, $rootScope, thingSetupService, 'things')
 	$rootScope.data.things = [];
 	return dataCache;
 }).factory('homeGroupRepository', 
 		function($q, $rootScope, groupSetupService) {
-	var dataCache = new DataCache($q, $rootScope, groupSetupService, 'homeGroups', true)
+	var dataCache = new DataCache($q, $rootScope, groupSetupService, 'homeGroups')
 	$rootScope.data.homeGroups = [];
 	return dataCache;
 }).factory('itemRepository', 
