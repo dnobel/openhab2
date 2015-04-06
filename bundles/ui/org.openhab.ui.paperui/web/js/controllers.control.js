@@ -304,6 +304,7 @@ angular.module('SmartHomeManagerApp.controllers.control', []).controller('Contro
             	
             	var stateObject = getStateAsObject($scope.item.state);
             	stateObject.h = hueValue;
+            	stateObject.b = $scope.brightness;
             	
             	if (!stateObject.b) {
 					stateObject.b = 100;
