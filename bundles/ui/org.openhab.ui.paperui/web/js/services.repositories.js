@@ -9,21 +9,17 @@ var DataCache = function($q, $rootScope, remoteService, dataType, staticData) {
 	}
 	this.getAll = function(callback, refresh) {
 		var deferred = $q.defer();
-        deferred.promise.then(function(res) {
-            if(callback && res !== 'No update') {
-                return callback(res);
-            } else {
-                return;
-            }
-        }, function(res) {
-            return;
-        }, function(res) {
-            if(callback) {
-                return callback(res);
-            } else {
-                return;
-            }
-        });
+		var progressFn = null, successFn = null;
+		if (angular.isFunction(callback)) {
+			successFn = function (res) {
+				if (res !== 'No update') {
+					return callback(res);
+				}
+			};
+			progressFn =  callback; // Simply call with resolved data
+		}
+		deferred.promise.then(successFn, null, progressFn);
+
 		if(cacheEnabled && staticData && self.initialFetch) {
 		    deferred.resolve($rootScope.data[dataType]);
 		} else {
@@ -43,9 +39,9 @@ var DataCache = function($q, $rootScope, remoteService, dataType, staticData) {
     				deferred.resolve('No update');
     			}
     		});
-            if(cacheEnabled && self.initialFetch) {
-                deferred.notify($rootScope.data[dataType]);
-            }
+				if(cacheEnabled && self.initialFetch) {
+						deferred.notify($rootScope.data[dataType]);
+				}
 		}
         return deferred.promise;
 	};
@@ -54,19 +50,11 @@ var DataCache = function($q, $rootScope, remoteService, dataType, staticData) {
 		if(element != null && !this.dirty && !refresh) {
 			callback(element);
 		} else {
-			self.getAll(null, true).then(function(res) {
-				if(callback) {
+			self.getAll(null, true).then(function() {
+				if(angular.isFunction(callback)) {
 					callback(self.find(condition));
-	        		return;
-	        	} else {
-	        		return;
-	        	}
-	        }, function(res) {
-	        	callback(null);
-	        	return;
-	        }, function(res) {
-	        	return;
-	        });
+	      }
+	    }, angular.bind(this, callback, null));
 		}
 	};
 	this.find = function(condition) {

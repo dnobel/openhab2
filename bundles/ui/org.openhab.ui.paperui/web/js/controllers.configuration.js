@@ -11,10 +11,10 @@ angular.module('SmartHomeManagerApp.controllers.configuration',
 }).controller('BindingController', function($scope, $mdDialog, bindingRepository) {
 	$scope.setSubtitle(['Bindings']);
 	$scope.setHeaderText('Shows all installed bindings.');
-	$scope.refresh = function() {
+	$scope.refresh = function refresh() {
 		bindingRepository.getAll();	
 	};
-	$scope.openBindingInfoDialog = function(bindingId, event) {
+	$scope.openBindingInfoDialog = function openBindingInfoDialog(bindingId, event) {
 		$mdDialog.show({
 			controller : 'BindingInfoDialogController',
 			templateUrl : 'partials/dialog.bindinginfo.html',
@@ -22,7 +22,7 @@ angular.module('SmartHomeManagerApp.controllers.configuration',
 			hasBackdrop: true,
 			locals: {bindingId: bindingId}
 		});
-	}
+	};
 	bindingRepository.getAll();
 }).controller('BindingInfoDialogController', function($scope, $mdDialog, bindingRepository, bindingId) {
 	$scope.binding = undefined;
@@ -39,8 +39,8 @@ angular.module('SmartHomeManagerApp.controllers.configuration',
 	$scope.setHeaderText('Shows all configured Home Groups.');
 	$scope.getAll = function() {
 		homeGroupRepository.getAll();	
-	}
-	$scope.add = function() {
+	};
+	$scope.add = function add() {
 		$mdDialog.show({
 			controller : 'AddGroupDialogController',
 			templateUrl : 'partials/dialog.addgroup.html',
@@ -56,7 +56,7 @@ angular.module('SmartHomeManagerApp.controllers.configuration',
 	        });
 		});
 	};
-	$scope.remove = function(homeGroup, event) {
+	$scope.remove = function remove(homeGroup, event) {
     	var confirm = $mdDialog.confirm()
 	      .title('Remove ' + homeGroup.label)
 	      .content('Would you like to remove the group?')
@@ -77,10 +77,10 @@ angular.module('SmartHomeManagerApp.controllers.configuration',
 }).controller('AddGroupDialogController', function($scope, $mdDialog) {
 	$scope.binding = undefined;
 	
-	$scope.close = function() {
+	$scope.close = function closeDialog() {
 		$mdDialog.cancel();
-	}
-	$scope.add  = function(label) {		
+	};
+	$scope.add  = function addDialogLabel(label) {
 		$mdDialog.hide(label);
 	}
 }).controller('ThingController', function($scope, $timeout, $mdDialog, thingRepository, 
@@ -90,12 +90,13 @@ angular.module('SmartHomeManagerApp.controllers.configuration',
 	
 	thingRepository.getAll();
 	
-	$scope.refresh = function() {
+	$scope.refresh = function refresh() {
 		thingRepository.getAll();	
 	};
-	$scope.remove = function(thing, event) {
+	$scope.remove = function remove(thing, event) {
+		var label = thing.item ? thing.item.label : thing.UID;
 		var confirm = $mdDialog.confirm()
-	      .title('Remove ' + thing.item.label)
+	      .title('Remove ' + label)
 	      .content('Would you like to remove the thing from the system?')
 	      .ariaLabel('Remove Thing')
 	      .ok('Remove')
@@ -120,7 +121,7 @@ angular.module('SmartHomeManagerApp.controllers.configuration',
 	
 	$scope.thing;
 	$scope.thingType;
-	$scope.edit = function(thing, event) {
+	$scope.edit = function edit(thing, event) {
 		$mdDialog.show({
 			controller : 'EditThingDialogController',
 			templateUrl : 'partials/dialog.editthing.html',
@@ -129,7 +130,7 @@ angular.module('SmartHomeManagerApp.controllers.configuration',
 			locals: {thing: thing}
 		});
 	};
-	$scope.remove = function(thing, event) {
+	$scope.remove = function remove(thing, event) {
 		var confirm = $mdDialog.confirm()
 	      .title('Remove ' + thing.item.label)
 	      .content('Would you like to remove the thing from the system?')
@@ -147,21 +148,21 @@ angular.module('SmartHomeManagerApp.controllers.configuration',
 	    });
 	};
 	
-	$scope.enableChannel = function(thingUID, channelID) {
+	$scope.enableChannel = function enableChannel(thingUID, channelID) {
 		thingSetupService.enableChannel({channelUID: thingUID + ':' + channelID}, function() {
 			$scope.getThing(true);
 			toastService.showDefaultToast('Channel enabled');
 		});
 	};
 	
-	$scope.disableChannel = function(thingUID, channelID) {
+	$scope.disableChannel = function disableChannel(thingUID, channelID) {
 		thingSetupService.disableChannel({channelUID: thingUID + ':' + channelID}, function() {
 			$scope.getThing(true);
 			toastService.showDefaultToast('Channel disabled');
 		});
 	};
 	
-    $scope.getChannelById = function(channelId) {
+    $scope.getChannelById = function getChannelById(channelId) {
         if (!$scope.thingType) {
             return;
         }
@@ -170,7 +171,7 @@ angular.module('SmartHomeManagerApp.controllers.configuration',
         })[0];
     };
     
-    $scope.getChannels = function(advanced) {
+    $scope.getChannels = function getChannels(advanced) {
         if (!$scope.thingType || !$scope.thing) {
             return;
         }
@@ -180,14 +181,15 @@ angular.module('SmartHomeManagerApp.controllers.configuration',
         });
     };
 	
-    $scope.getThing = function(refresh) {
+    $scope.getThing = function getThing(refresh) {
     	thingRepository.getOne(function(thing) {
     		return thing.UID === thingUID;
     	}, function(thing) {
     		$scope.thing = thing;
-    		$scope.setTitle(thing.item.label);
+		if (!thing) return;
+		$scope.setTitle(thing.item ? thing.item.label : thing.UID);
     	}, refresh);	
-	}
+	};
 	$scope.getThing(false);
 	
 	thingTypeRepository.getOne(function(thingType) {
@@ -211,7 +213,10 @@ angular.module('SmartHomeManagerApp.controllers.configuration',
 	$scope.homeGroups = [];
     $scope.groupNames = [];
 	
-	$scope.update = function(thing) {
+	$scope.update = function update(thing) {
+		if (!$scope.thingType.configParameters) {
+			return;
+		}
 		for (var i = 0; i < $scope.thingType.configParameters.length; i++) {
 			var parameter = $scope.thingType.configParameters[i];
 			if(thing.configuration[parameter.name]) {
@@ -244,7 +249,7 @@ angular.module('SmartHomeManagerApp.controllers.configuration',
 		});
 	};
 	
-	$scope.getThing = function(refresh) {
+	$scope.getThing = function refresh(refresh) {
 	    	thingRepository.getOne(function(thing) {
 	    		return thing.UID === thingUID;
 	    	}, function(thing) {
@@ -261,7 +266,7 @@ angular.module('SmartHomeManagerApp.controllers.configuration',
 	    	    });
 	    		$scope.setTitle('Edit ' + thing.item.label);
 	    	}, refresh);	
-		}
+		};
 	$scope.getThing(false);
 	
 	thingTypeRepository.getOne(function(thingType) {

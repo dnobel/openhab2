@@ -38,8 +38,8 @@ angular.module('SmartHomeManagerApp', [
 }).run(['$location', '$rootScope', '$mdToast', function($location, $rootScope, $route, $mdToast) {
 	var original = $location.path;
 	$rootScope.$on('$routeChangeSuccess', function (event, current, previous) {
-        $rootScope.title = current.$$route.title;
-        $rootScope.simpleHeader = current.$$route.simpleHeader;
+        //$rootScope.title = current.$$route.title; // BAD! Never access via $$
+        //$rootScope.simpleHeader = current.$$route.simpleHeader;
         $rootScope.path = $location.path().split('/');
         $rootScope.section = $rootScope.path[1];
         $rootScope.page = $rootScope.path[2];
