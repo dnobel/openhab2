@@ -54,7 +54,7 @@
 		<div class="header-toolbar">
 			<md-button title="Scan" class="md-icon-settings-input-antenna"
 				ng-click="showScanDialog($event)"></md-button>
-			<md-button class="md-icon-refresh" ng-click="getAll()"></md-button>
+			<md-button class="md-icon-refresh" ng-click="refresh()"></md-button>
 		</div>
 		<div class="section-header">
 			<div class="container">
@@ -138,8 +138,14 @@
 						Add Thing</button>
 				</p>
 			</div>
-			<hr />
 			<div ng-include="'partials/include.inbox.html'"></div>
+			<hr />
+			<p class="text-center">
+				<span>Thing not listed?</span>
+				<button class="md-button"
+					ng-click="navigateTo('wizard/thing-types/' + bindingId)">Add
+					Manually</button>
+			</p>
 		</div>
 	</div>
 	<div ng-controller="SetupWizardThingTypesController" class="white-bg"

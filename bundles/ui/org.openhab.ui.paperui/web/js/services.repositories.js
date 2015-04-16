@@ -1,4 +1,4 @@
-var DataCache = function($q, $rootScope, remoteService, dataType, staticData) {
+var Repository = function($q, $rootScope, remoteService, dataType, staticData) {
 	var self = this;
 	var cacheEnabled = true;
 	var dirty = false;
@@ -8,6 +8,10 @@ var DataCache = function($q, $rootScope, remoteService, dataType, staticData) {
 		this.dirty = true;
 	}
 	this.getAll = function(callback, refresh) {
+		if(typeof callback === 'boolean') {
+			refresh = true;
+			callback = null;
+		}
 		var deferred = $q.defer();
         deferred.promise.then(function(res) {
             if(callback && res !== 'No update') {
@@ -24,7 +28,7 @@ var DataCache = function($q, $rootScope, remoteService, dataType, staticData) {
                 return;
             }
         });
-		if(cacheEnabled && staticData && self.initialFetch) {
+		if(cacheEnabled && staticData && self.initialFetch && !refresh) {
 		    deferred.resolve($rootScope.data[dataType]);
 		} else {
     		remoteService.getAll(function(data) {
@@ -95,35 +99,35 @@ var DataCache = function($q, $rootScope, remoteService, dataType, staticData) {
 angular.module('SmartHomeManagerApp.services.repositories', []).factory('bindingRepository', 
 		function($q, $rootScope, bindingService) {
 	$rootScope.data.bindings = [];
-	return new DataCache($q, $rootScope, bindingService, 'bindings', true);
+	return new Repository($q, $rootScope, bindingService, 'bindings', true);
 }).factory('thingTypeRepository', 
 		function($q, $rootScope, thingTypeService) {
 	$rootScope.data.thingTypes = [];
-	return new DataCache($q, $rootScope, thingTypeService, 'thingTypes', true);
+	return new Repository($q, $rootScope, thingTypeService, 'thingTypes', true);
 }).factory('discoveryResultRepository', 
 		function($q, $rootScope, inboxService, eventService) {
-	var dataCache = new DataCache($q, $rootScope, inboxService, 'discoveryResults')
+	var repository = new Repository($q, $rootScope, inboxService, 'discoveryResults')
 	$rootScope.data.discoveryResults = [];
 	eventService.onEvent('smarthome/inbox/added/*', function(topic, discoveryResult) {
-		dataCache.add(discoveryResult);
+		repository.add(discoveryResult);
 	});
 	eventService.onEvent('smarthome/inbox/removed/*', function(topic, discoveryResult) {
-		dataCache.remove(discoveryResult);
+		repository.remove(discoveryResult);
 	});
-	return dataCache;
+	return repository;
 }).factory('thingRepository', 
 		function($q, $rootScope, thingSetupService) {
-	var dataCache = new DataCache($q, $rootScope, thingSetupService, 'things')
+	var repository = new Repository($q, $rootScope, thingSetupService, 'things')
 	$rootScope.data.things = [];
-	return dataCache;
+	return repository;
 }).factory('homeGroupRepository', 
 		function($q, $rootScope, groupSetupService) {
-	var dataCache = new DataCache($q, $rootScope, groupSetupService, 'homeGroups')
+	var repository = new Repository($q, $rootScope, groupSetupService, 'homeGroups')
 	$rootScope.data.homeGroups = [];
-	return dataCache;
+	return repository;
 }).factory('itemRepository', 
 		function($q, $rootScope, itemService) {
-	var dataCache = new DataCache($q, $rootScope, itemService, 'items')
+	var repository = new Repository($q, $rootScope, itemService, 'items')
 	$rootScope.data.items = [];
-	return dataCache;
+	return repository;
 });

@@ -7,7 +7,7 @@
 			</div>
 			<div flex="60" layout="row" layout-align="end center"
 				class="dimmer-widget">
-				<md-switch ng-disabled="!isReadOnly(item)" ng-model="item.state"
+				<md-switch ng-disabled="isReadOnly(item)" ng-model="item.state"
 					ng-change="setOn(item.state)" ng-true-value="'ON'"
 					ng-false-value="'OFF'"></md-switch>
 			</div>

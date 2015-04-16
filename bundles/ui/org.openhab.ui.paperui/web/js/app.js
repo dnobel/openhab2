@@ -1,3 +1,5 @@
+var paperUIVersion = '0.6';
+
 angular.module('SmartHomeManagerApp', [
   'SmartHomeManagerApp.controllers',
   'SmartHomeManagerApp.controllers.control',
@@ -9,7 +11,7 @@ angular.module('SmartHomeManagerApp', [
   'ngRoute',
   'ngResource',
   'ngMaterial'
-]).config(['$routeProvider', function($routeProvider) {
+]).config(['$routeProvider', '$httpProvider', function($routeProvider, $httpProvider) {
   $routeProvider.
 	when('/control', {templateUrl: 'partials/control.html', controller: 'ControlPageController', title: 'Control', simpleHeader: true}).
 	when('/setup', {redirectTo: '/setup/search'}).
@@ -29,14 +31,23 @@ angular.module('SmartHomeManagerApp', [
 	when('/configuration/things/edit/:thingUID', {templateUrl: 'partials/configuration.html', controller: 'ConfigurationPageController', title: 'Configuration'}).
 	when('/preferences', {templateUrl: 'partials/preferences.html', controller: 'PreferencesPageController', title: 'Preferences'}).
 	otherwise({redirectTo: '/control'});
+	$httpProvider.interceptors.push(function($q, $injector) {
+		return {
+			'responseError': function(rejection) {
+				$injector.get('toastService').showErrorToast('Request failed: ' + rejection.status + ' - ' + rejection.statusText);
+				return $q.reject(rejection);
+			}
+		};
+	});
 }]).directive('editableitemstate', function(){
     return function($scope, $element) {
         $element.context.addEventListener('focusout', function(e){
             $scope.sendCommand($($element).html());
         });
     };
-}).run(['$location', '$rootScope', '$mdToast', function($location, $rootScope, $route, $mdToast) {
+}).run(['$location', '$rootScope', function($location, $rootScope) {
 	var original = $location.path;
+	$rootScope.version = paperUIVersion;
 	$rootScope.$on('$routeChangeSuccess', function (event, current, previous) {
         $rootScope.title = current.$$route.title;
         $rootScope.simpleHeader = current.$$route.simpleHeader;

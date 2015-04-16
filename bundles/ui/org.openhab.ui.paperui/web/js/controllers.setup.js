@@ -29,8 +29,8 @@ angular.module('SmartHomeManagerApp.controllers.setup',
 		});
     }
     
-    $scope.getAll = function() {
-    	discoveryResultRepository.getAll();
+    $scope.refresh = function() {
+    	discoveryResultRepository.getAll(true);
     };
 }).controller('InboxEntryController', function($scope, $mdDialog, $q, inboxService, discoveryResultRepository, 
         thingTypeRepository, thingSetupService, toastService, thingRepository) {
@@ -53,6 +53,7 @@ angular.module('SmartHomeManagerApp.controllers.setup',
                 var thingType = thingTypeRepository.find(function(thingType) {
                     return thingTypeUID === thingType.UID;
                 });
+                
                 if(thingType && thingType.bridge) {
                     $scope.navigateTo('wizard/search/' + thingUID.split(':')[0]);
                 } else {
@@ -227,21 +228,23 @@ angular.module('SmartHomeManagerApp.controllers.setup',
 		$scope.thingType = thingType;
 		$scope.thing.UID = thingType.UID + ':' + generateUUID();
 		$scope.thing.item.label = thingType.label;
-		$.each($scope.thingType.configParameters, function(i, parameter) {
-			if(parameter.defaultValue !== 'null') {
-				if(parameter.type === 'TEXT') {
-					$scope.thing.configuration[parameter.name] = parameter.defaultValue
-				} else if(parameter.type === 'BOOLEAN') {
-					$scope.thing.configuration[parameter.name] = new Boolean(parameter.defaultValue);
-				} else if(parameter.type === 'INTEGER' || parameter.type === 'DECIMAL') {
-					$scope.thing.configuration[parameter.name] = parseInt(parameter.defaultValue);
+		if($scope.thingType.configParameters) {
+			$.each($scope.thingType.configParameters, function(i, parameter) {
+				if(parameter.defaultValue !== 'null') {
+					if(parameter.type === 'TEXT') {
+						$scope.thing.configuration[parameter.name] = parameter.defaultValue
+					} else if(parameter.type === 'BOOLEAN') {
+						$scope.thing.configuration[parameter.name] = new Boolean(parameter.defaultValue);
+					} else if(parameter.type === 'INTEGER' || parameter.type === 'DECIMAL') {
+						$scope.thing.configuration[parameter.name] = parseInt(parameter.defaultValue);
+					} else {
+						$scope.thing.configuration[parameter.name] = parameter.defaultValue;
+					}
 				} else {
-					$scope.thing.configuration[parameter.name] = parameter.defaultValue;
+					$scope.thing.configuration[parameter.name] = '';
 				}
-			} else {
-				$scope.thing.configuration[parameter.name] = '';
-			}
-		});
+			});
+		}
     });
 }).controller('SetupWizardController', function($scope, discoveryResultRepository) {
     $scope.getAll = function() {

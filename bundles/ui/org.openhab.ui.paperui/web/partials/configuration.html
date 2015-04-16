@@ -128,7 +128,7 @@
 		<div class="container">
 			<h3>{{thingType.label}}</h3>
 			<p>{{thingType.description}}</p>
-			<h2>Channels</h2>
+			<h2 ng-show="thing.channels.length > 0">Channels</h2>
 			<div class="channels">
 				<div class="channel fab-item"
 					ng-repeat="channel in getChannels(false)">
